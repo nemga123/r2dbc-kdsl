@@ -8,6 +8,10 @@
     <name>r2dbc-kotlin-query-dsl-parent</name>
     <description>r2dbc-kotlin-query-dsl-parent</description>
     <url/>
+    <modules>
+        <module>r2dbc-kotlin-querydsl</module>
+    </modules>
+
     <licenses>
         <license/>
     </licenses>
