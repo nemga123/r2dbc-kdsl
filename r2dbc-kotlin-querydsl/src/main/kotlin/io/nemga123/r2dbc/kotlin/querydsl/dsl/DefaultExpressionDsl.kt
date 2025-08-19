@@ -74,7 +74,7 @@ open class DefaultExpressionDsl(
         return SQL.literalOf(boolean)
     }
 
-    fun <T: Any> table(clazz: KClass<T>): Table {
+    open fun <T: Any> table(clazz: KClass<T>): Table {
         val tableName = getTableName(clazz)
         return Table.create(tableName)
     }

@@ -3,6 +3,7 @@ package io.nemga123.r2dbc.kotlin.querydsl.dsl
 import io.nemga123.r2dbc.kotlin.querydsl.annotation.R2dbcDsl
 import org.springframework.data.r2dbc.core.DefaultReactiveDataAccessStrategy
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
+import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.Expressions
 import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
@@ -12,25 +13,24 @@ import org.springframework.data.relational.core.sql.SelectBuilder.SelectFromAndJ
 @R2dbcDsl
 class CountQueryDsl (
     override val mappingContext: RelationalMappingContext,
-): DefaultExpressionDsl(mappingContext), SelectQueryDslBuilder.CountAndFromBuilder,
-    SelectQueryDslBuilder.CountWhereBuilder, SelectQueryDslBuilder.SelectAndLockModeBuilder, SelectQueryDslBuilder.BuildSelect {
+): DefaultExpressionDsl(mappingContext), CountQueryDslBuilder, CountQueryDslBuilder.CountWhereBuilder, CountQueryDslBuilder.SelectAndLockModeBuilder {
     private val from: FromDsl = FromDsl(mappingContext)
-    private val where: CriteriaDsl = CriteriaDsl(mappingContext)
+    private var where: Condition? = null
     private var lockMode: LockMode? = null
 
-    override fun from(dsl: FromDsl.() -> Unit): SelectQueryDslBuilder.CountWhereBuilder {
+    override fun from(dsl: FromDsl.() -> Unit): CountQueryDslBuilder.CountWhereBuilder {
         this.from.apply(dsl)
         return this
     }
 
 
-    override fun where(dsl: CriteriaDsl.() -> Unit): SelectQueryDslBuilder.SelectAndLockModeBuilder {
-        where.apply(dsl)
+    override fun where(dsl: CriteriaDsl.() -> Condition): CountQueryDslBuilder.SelectAndLockModeBuilder {
+        this.where = CriteriaDsl(mappingContext).run(dsl)
         return this
     }
 
 
-    override fun lockMode(lockMode: LockMode): SelectQueryDslBuilder.SelectAndLockModeBuilder {
+    override fun lockMode(lockMode: LockMode): CountQueryDslBuilder.SelectAndLockModeBuilder {
         this.lockMode = lockMode
         return this
     }
@@ -45,7 +45,7 @@ class CountQueryDsl (
             selectFromAndJoinBuilder.join(join.table, join.joinType).on(join.on)
         }
 
-        where.build()?.let { selectFromAndJoinBuilder.where(it) }
+        where?.let { selectFromAndJoinBuilder.where(it) }
 
         lockMode?.let { selectFromAndJoinBuilder.lock(lockMode!!) }
 

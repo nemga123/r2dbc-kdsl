@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.r2dbc.core.DefaultReactiveDataAccessStrategy
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
+import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.Expressions
 import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
@@ -21,14 +22,13 @@ class SelectQueryDsl (
     SelectQueryDslBuilder.SelectWhereBuilder,
     SelectQueryDslBuilder.SelectWhereAndOrderByBuilder,
     SelectQueryDslBuilder.SelectAndLimitOffsetBuilder,
-    SelectQueryDslBuilder.SelectAndLockModeBuilder,
-    SelectQueryDslBuilder.BuildSelect
+    SelectQueryDslBuilder.SelectAndLockModeBuilder
 {
     private val from: FromDsl = FromDsl(mappingContext)
     private var limit: Long = -1L
     private var offset: Long = -1L
     private val select: ProjectionDsl = ProjectionDsl(mappingContext)
-    private val where: CriteriaDsl = CriteriaDsl(mappingContext)
+    private var where: Condition? = null
     private val orderBy: OrderByDsl = OrderByDsl(mappingContext)
     private var lockMode: LockMode? = null
 
@@ -43,8 +43,8 @@ class SelectQueryDsl (
     }
 
 
-    override fun where(dsl: CriteriaDsl.() -> Unit): SelectQueryDslBuilder.SelectWhereAndOrderByBuilder {
-        where.apply(dsl)
+    override fun where(dsl: CriteriaDsl.() -> Condition): SelectQueryDslBuilder.SelectWhereAndOrderByBuilder {
+        this.where = CriteriaDsl(mappingContext).run(dsl)
         return this
     }
 
@@ -99,7 +99,7 @@ class SelectQueryDsl (
             selectFromAndJoinBuilder.join(join.table, join.joinType).on(join.on)
         }
 
-        where.build()?.let { selectFromAndJoinBuilder.where(it) }
+        where?.let { selectFromAndJoinBuilder.where(it) }
 
         lockMode?.let { selectFromAndJoinBuilder.lock(lockMode!!) }
 

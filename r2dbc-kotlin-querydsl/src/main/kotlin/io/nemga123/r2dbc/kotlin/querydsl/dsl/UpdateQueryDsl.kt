@@ -1,41 +1,61 @@
 package io.nemga123.r2dbc.kotlin.querydsl.dsl
 
 import io.nemga123.r2dbc.kotlin.querydsl.annotation.R2dbcDsl
-import org.springframework.data.r2dbc.core.DefaultReactiveDataAccessStrategy
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
+import org.springframework.data.relational.core.query.Criteria
+import org.springframework.data.relational.core.sql.Assignment
+import org.springframework.data.relational.core.sql.Condition
+import org.springframework.data.relational.core.sql.Table
 import org.springframework.data.relational.core.sql.Update
 import org.springframework.data.relational.core.sql.UpdateBuilder
+import org.springframework.util.Assert
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
 @R2dbcDsl
-class UpdateQueryDsl<T : Any>(
+class UpdateQueryDsl private constructor(
     override val mappingContext: RelationalMappingContext,
-): DefaultExpressionDsl(mappingContext), UpdateQueryDslBuilder<T>, UpdateQueryDslBuilder.UpdateAndValuesBuilder<T>, UpdateQueryDslBuilder.UpdateAndWhereBuilder, UpdateQueryDslBuilder.BuildUpdate {
-    private lateinit var tableClass: KClass<T>
-    private val assignment: AssignmentDsl<T> = AssignmentDsl(mappingContext)
-    private val where: CriteriaDsl = CriteriaDsl(mappingContext)
+    private val assignments: List<Assignment>,
+    private val where: Condition?,
+    private val table: Table?
+): DefaultExpressionDsl(mappingContext), UpdateQueryDslBuilder, UpdateQueryDslBuilder.UpdateBuild, UpdateQueryDslBuilder.UpdateAndWhereBuilder {
+    constructor(
+        context: RelationalMappingContext,
+    ): this(
+        context,
+        emptyList(),
+        null,
+        null
+    )
 
-    override fun table(tableClazz: KClass<T>): UpdateQueryDslBuilder.UpdateAndValuesBuilder<T> {
-        this.tableClass = tableClazz
-        return this
+    override fun <T: Any> from(tableClazz: KClass<T>): UpdateQueryDslBuilder.UpdateAndValuesBuilder<T> {
+        return UpdateQueryAndValuesDsl(mappingContext, tableClazz)
     }
 
-    override fun set(dsl: AssignmentDsl<T>.() -> Unit): UpdateQueryDslBuilder.UpdateAndWhereBuilder {
-        assignment.apply(dsl)
-        return this
+    class UpdateQueryAndValuesDsl<T: Any>(
+        override val mappingContext: RelationalMappingContext,
+        private val tableClazz: KClass<T>,
+    ) : DefaultExpressionDsl(mappingContext), UpdateQueryDslBuilder.UpdateAndValuesBuilder<T>{
+        private val assignment: AssignmentDsl<T> = AssignmentDsl(mappingContext, tableClazz)
+
+        override fun assign(dsl: AssignmentDsl<T>.() -> Unit): UpdateQueryDslBuilder.UpdateAndWhereBuilder {
+            assignment.apply(dsl)
+            return UpdateQueryDsl(mappingContext, assignment.build(),null,  table(tableClazz))
+        }
     }
 
-    override fun where(dsl: CriteriaDsl.() -> Unit): UpdateQueryDslBuilder.BuildUpdate {
-        where.apply(dsl)
-        return this
+    override fun where(dsl: CriteriaDsl.() -> Condition): UpdateQueryDslBuilder.UpdateBuild {
+        return UpdateQueryDsl(mappingContext, assignments, CriteriaDsl(mappingContext).run(dsl), this.table)
     }
 
     override fun build(): Update {
-        val builder: UpdateBuilder.UpdateWhere = Update.builder()
-            .table(super.table(tableClass))
-            .set(assignment.build())
+        Assert.notNull(table, "From table is null")
 
-        where.build()?.let { builder.where(it) }
+        val builder: UpdateBuilder.UpdateWhere = Update.builder()
+            .table(this.table!!)
+            .set(assignments)
+
+        where?.let { builder.where(it) }
 
         return builder.build()
     }

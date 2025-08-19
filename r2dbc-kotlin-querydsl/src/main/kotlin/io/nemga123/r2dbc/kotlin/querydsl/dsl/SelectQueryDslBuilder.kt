@@ -1,44 +1,33 @@
 package io.nemga123.r2dbc.kotlin.querydsl.dsl
 
 import org.springframework.data.domain.Pageable
+import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
 
 interface SelectQueryDslBuilder {
     fun select(dsl: ProjectionDsl.() -> Unit): SelectAndFromBuilder
+    fun build(): Select
 
     interface SelectAndFromBuilder {
         fun from(dsl: FromDsl.() -> Unit): SelectWhereBuilder
     }
 
-    interface SelectWhereBuilder: BuildSelect, SelectAndLimitOffsetBuilder, SelectWhereAndOrderByBuilder, SelectAndLockModeBuilder {
-        fun where(dsl: CriteriaDsl.() -> Unit): SelectWhereAndOrderByBuilder
+    interface SelectWhereBuilder: SelectAndLimitOffsetBuilder, SelectWhereAndOrderByBuilder, SelectAndLockModeBuilder {
+        fun where(dsl: CriteriaDsl.() -> Condition): SelectWhereAndOrderByBuilder
     }
 
-    interface SelectWhereAndOrderByBuilder: SelectAndLockModeBuilder, BuildSelect {
+    interface SelectWhereAndOrderByBuilder: SelectAndLockModeBuilder {
         fun orderBy(dsl: OrderByDsl.() -> Unit): SelectAndLimitOffsetBuilder
         fun page(page: Pageable): SelectAndLockModeBuilder
     }
 
-    interface SelectAndLimitOffsetBuilder: BuildSelect, SelectAndLockModeBuilder {
+    interface SelectAndLimitOffsetBuilder: SelectAndLockModeBuilder {
         fun limit(limit: Long): SelectAndLimitOffsetBuilder
         fun offset(offset: Long): SelectAndLimitOffsetBuilder
     }
 
-    interface SelectAndLockModeBuilder: BuildSelect {
+    interface SelectAndLockModeBuilder {
         fun lockMode(lockMode: LockMode): SelectAndLockModeBuilder
-    }
-
-    interface CountAndFromBuilder {
-        fun from(dsl: FromDsl.() -> Unit): CountWhereBuilder
-    }
-
-    interface CountWhereBuilder: BuildSelect, SelectAndLockModeBuilder {
-        fun where(dsl: CriteriaDsl.() -> Unit): SelectAndLockModeBuilder
-    }
-
-
-    interface BuildSelect {
-        fun build(): Select
     }
 }

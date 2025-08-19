@@ -25,6 +25,8 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty
 import org.springframework.data.relational.core.sql.SqlIdentifier
+import org.springframework.data.relational.core.sql.Update
+import org.springframework.data.relational.core.sql.UpdateBuilder
 import org.springframework.data.relational.core.sql.render.SqlRenderer
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec
@@ -158,9 +160,8 @@ class R2dbcKotlinQueryDsl(
         return rowMapper
     }
 
-    override suspend fun <T: Any> update(dsl: UpdateQueryDsl<T>.() -> Unit): Long {
-        val updateBuilder = UpdateQueryDsl<T>(mappingContext).apply(dsl)
-        val update = updateBuilder.build()
+    override suspend fun update(dsl: UpdateQueryDsl.() -> Update): Long {
+        val update: Update = UpdateQueryDsl(mappingContext).run(dsl)
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(update) })
             .fetch()
             .awaitRowsUpdated()
