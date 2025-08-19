@@ -6,9 +6,12 @@ import kotlin.reflect.KClass
 
 interface DeleteQueryDslBuilder {
     fun <T: Any> from(intoClazz: KClass<T>): DeleteFromAndWhereBuilder
-    fun build(): Delete
 
-    interface DeleteFromAndWhereBuilder {
+    interface DeleteFromAndWhereBuilder: DeleteBuild {
         fun where(dsl: CriteriaDsl.() -> Condition): DeleteFromAndWhereBuilder
+    }
+
+    interface DeleteBuild {
+        fun build(): Delete
     }
 }

@@ -1,11 +1,16 @@
 package io.nemga123.r2dbc.kotlin.querydsl.query
 
 import io.nemga123.r2dbc.kotlin.querydsl.dsl.CountQueryDsl
+import io.nemga123.r2dbc.kotlin.querydsl.dsl.CountQueryDslBuilder
 import io.nemga123.r2dbc.kotlin.querydsl.dsl.DeleteQueryDsl
+import io.nemga123.r2dbc.kotlin.querydsl.dsl.DeleteQueryDslBuilder
 import io.nemga123.r2dbc.kotlin.querydsl.dsl.InsertEntityQueryDsl
 import io.nemga123.r2dbc.kotlin.querydsl.dsl.InsertQueryDsl
+import io.nemga123.r2dbc.kotlin.querydsl.dsl.InsertQueryDslBuilder
 import io.nemga123.r2dbc.kotlin.querydsl.dsl.SelectQueryDsl
+import io.nemga123.r2dbc.kotlin.querydsl.dsl.SelectQueryDslBuilder
 import io.nemga123.r2dbc.kotlin.querydsl.dsl.UpdateQueryDsl
+import io.nemga123.r2dbc.kotlin.querydsl.dsl.UpdateQueryDslBuilder
 import io.r2dbc.spi.Row
 import io.r2dbc.spi.RowMetadata
 import java.util.*
@@ -24,9 +29,9 @@ import org.springframework.data.relational.core.conversion.AbstractRelationalCon
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty
+import org.springframework.data.relational.core.sql.Delete
 import org.springframework.data.relational.core.sql.SqlIdentifier
 import org.springframework.data.relational.core.sql.Update
-import org.springframework.data.relational.core.sql.UpdateBuilder
 import org.springframework.data.relational.core.sql.render.SqlRenderer
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec
@@ -58,7 +63,7 @@ class R2dbcKotlinQueryDsl(
     }
 
 
-    override suspend fun count(dsl: CountQueryDsl.() -> Unit): Long {
+    override suspend fun count(dsl: CountQueryDslBuilder.() -> Unit): Long {
         val selectBuilder = CountQueryDsl(mappingContext).apply(dsl)
         val select = selectBuilder.build()
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(select) })
@@ -69,7 +74,7 @@ class R2dbcKotlinQueryDsl(
         return result
     }
 
-    override suspend fun exist(dsl: SelectQueryDsl.() -> Unit): Boolean {
+    override suspend fun exist(dsl: SelectQueryDslBuilder.() -> Unit): Boolean {
         val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
         val select = selectBuilder.build()
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(select) })
@@ -80,7 +85,7 @@ class R2dbcKotlinQueryDsl(
         return result
     }
 
-    override suspend fun <T : Any> selectAll(retType: KClass<T>, dsl: SelectQueryDsl.() -> Unit): List<T> {
+    override suspend fun <T : Any> selectAll(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Unit): List<T> {
         Assert.notNull(retType, "Entity class must not be null")
 
         val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
@@ -90,7 +95,7 @@ class R2dbcKotlinQueryDsl(
         return result.asFlow().toList()
     }
 
-    override suspend fun <T : Any> selectSingle(retType: KClass<T>, dsl: SelectQueryDsl.() -> Unit): T {
+    override suspend fun <T : Any> selectSingle(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Unit): T {
         Assert.notNull(retType, "Entity class must not be null")
 
         val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
@@ -100,7 +105,7 @@ class R2dbcKotlinQueryDsl(
         return result.awaitSingle()
     }
 
-    override suspend fun <T : Any> selectSingleOrNull(retType: KClass<T>, dsl: SelectQueryDsl.() -> Unit): T? {
+    override suspend fun <T : Any> selectSingleOrNull(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Unit): T? {
         Assert.notNull(retType, "Entity class must not be null")
 
         val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
@@ -160,7 +165,7 @@ class R2dbcKotlinQueryDsl(
         return rowMapper
     }
 
-    override suspend fun update(dsl: UpdateQueryDsl.() -> Update): Long {
+    override suspend fun update(dsl: UpdateQueryDslBuilder.() -> Update): Long {
         val update: Update = UpdateQueryDsl(mappingContext).run(dsl)
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(update) })
             .fetch()
@@ -188,7 +193,7 @@ class R2dbcKotlinQueryDsl(
         return result
     }
 
-    override suspend fun <T : Any> insert(dsl: InsertQueryDsl<T>.() -> Unit): T {
+    override suspend fun <T : Any> insert(dsl: InsertQueryDslBuilder<T>.() -> Unit): T {
         val insertQueryBuilder = InsertQueryDsl<T>(mappingContext, converter).apply(dsl)
         val insert = insertQueryBuilder.build()
         val insertedEntity: T = insertQueryBuilder.buildEntity()
@@ -211,9 +216,8 @@ class R2dbcKotlinQueryDsl(
         return result
     }
 
-    override suspend fun delete(dsl: DeleteQueryDsl.() -> Unit): Long {
-        val deleteBuilder =  DeleteQueryDsl(mappingContext).apply(dsl)
-        val delete = deleteBuilder.build()
+    override suspend fun delete(dsl: DeleteQueryDslBuilder.() -> Delete): Long {
+        val delete =  DeleteQueryDsl(mappingContext).run(dsl)
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(delete) })
             .fetch()
             .rowsUpdated()
