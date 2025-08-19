@@ -10,49 +10,34 @@ import kotlin.reflect.KClass
 @R2dbcDsl
 class FromDsl(
     override val mappingContext: RelationalMappingContext,
-): DefaultExpressionDsl(mappingContext) {
+): DefaultExpressionDsl(mappingContext), FromDslBuilder, FromDslBuilder.FromWithJoinBuilder, FromDslBuilder.FromBuild {
     private var from: TableLike? = null
-    private val joins: MutableList<DefaultJoin> = mutableListOf()
+    private val joins: MutableList<FromDslBuilder.DefaultJoin> = mutableListOf()
 
-    fun <T: Any> from(clazz: KClass<T>) {
-        from(table(clazz))
-    }
-
-    fun from(tableLike: TableLike) {
-        if (from != null) {
-            throw RuntimeException("ALREADY_FROM")
-        }
+    override fun from(tableLike: TableLike): FromDslBuilder.FromWithJoinBuilder {
         this.from = tableLike
+        return this
     }
 
-    fun <T: Any> leftJoin(clazz: KClass<T>, condition: Condition){
-        this.leftJoin(table(clazz), condition)
-    }
-
-    fun leftJoin(table: TableLike, condition: Condition){
+    override fun leftJoin(table: TableLike, condition: Condition): FromDslBuilder.FromWithJoinBuilder {
         this.joins.add(
             DefaultJoinBuilder(table, Join.JoinType.LEFT_OUTER_JOIN).on(condition)
         )
+        return this
     }
 
-    fun <T: Any> rightJoin(clazz: KClass<T>, condition: Condition){
-        this.rightJoin(table(clazz), condition)
-    }
-
-    fun rightJoin(table: TableLike, condition: Condition) {
+    override fun rightJoin(table: TableLike, condition: Condition): FromDslBuilder.FromWithJoinBuilder {
         this.joins.add(
             DefaultJoinBuilder(table, Join.JoinType.RIGHT_OUTER_JOIN).on(condition)
         )
+        return this
     }
 
-    fun <T: Any> join(clazz: KClass<T>, condition: Condition){
-        this.join(table(clazz), condition)
-    }
-
-    fun join(table: TableLike, condition: Condition) {
+    override fun join(table: TableLike, condition: Condition): FromDslBuilder.FromWithJoinBuilder {
         this.joins.add(
             DefaultJoinBuilder(table, Join.JoinType.JOIN).on(condition)
         )
+        return this
     }
 
     /**
@@ -62,18 +47,12 @@ class FromDsl(
         private val table: TableLike,
         private val joinType: Join.JoinType,
     ) {
-        fun on(condition: Condition): DefaultJoin {
-            return DefaultJoin(table, joinType, condition)
+        fun on(condition: Condition): FromDslBuilder.DefaultJoin {
+            return FromDslBuilder.DefaultJoin(table, joinType, condition)
         }
     }
 
-    data class DefaultJoin(
-        val table: TableLike,
-        val joinType: Join.JoinType,
-        val on: Condition,
-    )
+    override fun buildFrom(): TableLike = from!!
 
-    internal fun buildFrom(): TableLike? = from
-
-    internal fun buildJoin(): List<DefaultJoin> = joins
+    override fun buildJoin(): List<FromDslBuilder.DefaultJoin> = joins
 }

@@ -1,7 +1,6 @@
 package io.nemga123.r2dbc.kotlin.querydsl.dsl
 
 import io.nemga123.r2dbc.kotlin.querydsl.support.PropertyUtils
-import org.springframework.data.r2dbc.core.ReactiveDataAccessStrategy
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
 import org.springframework.data.relational.core.sql.BooleanLiteral
@@ -11,6 +10,7 @@ import org.springframework.data.relational.core.sql.Functions
 import org.springframework.data.relational.core.sql.InlineQuery
 import org.springframework.data.relational.core.sql.NumericLiteral
 import org.springframework.data.relational.core.sql.SQL
+import org.springframework.data.relational.core.sql.Select
 import org.springframework.data.relational.core.sql.SimpleFunction
 import org.springframework.data.relational.core.sql.SqlIdentifier
 import org.springframework.data.relational.core.sql.StringLiteral
@@ -25,13 +25,6 @@ open class DefaultExpressionDsl(
         return this.column(getColumnName(column))
     }
 
-    fun <T: Any, V: Any?> path(column: KProperty1<T, V>): Column {
-        val tableClazz = PropertyUtils.getOwner(column)
-        val tableName = getTableName(tableClazz)
-        val table = Table.create(tableName)
-        return table.column(getColumnName(column))
-    }
-
 
     fun count(vararg expression: Expression): SimpleFunction {
         return Functions.count(*expression)
@@ -41,7 +34,7 @@ open class DefaultExpressionDsl(
         return Functions.greatest(*expression)
     }
 
-    fun lease(vararg expression: Expression): SimpleFunction {
+    fun least(vararg expression: Expression): SimpleFunction {
         return Functions.least(*expression)
     }
 
@@ -79,8 +72,8 @@ open class DefaultExpressionDsl(
         return Table.create(tableName)
     }
 
-    fun subquery(alias: String, builder: SelectQueryDslBuilder.() -> Unit): InlineQuery {
-        val select = SelectQueryDsl(mappingContext).apply(builder).build()
+    fun subquery(alias: String, dsl: SelectQueryDslBuilder.() -> Select): InlineQuery {
+        val select = SelectQueryDsl(mappingContext).run(dsl)
         return InlineQuery.create(select, alias)
     }
 

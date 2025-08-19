@@ -9,16 +9,10 @@ class ProjectionDsl(
     override val mappingContext: RelationalMappingContext,
 ): DefaultExpressionDsl(mappingContext) {
     private val selectList: MutableList<Expression> = mutableListOf()
-    private var distinct: Boolean = false
 
-    fun select(exp: Expression) {
-        this.selectList.add(exp)
+    fun select(vararg exp: Expression) {
+        this.selectList.addAll(exp)
     }
 
-    fun distinct(distinct: Boolean = true) {
-        this.distinct = distinct
-    }
-
-    internal fun isDistinct(): Boolean = distinct
     internal fun build(): List<Expression> = selectList
 }

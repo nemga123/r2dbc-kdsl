@@ -26,7 +26,7 @@ class AssignmentDsl<T: Any>(
     }
 
     fun setExp(col: KProperty1<T, *>, exp: Expression) {
-        val column = path(col)
+        val column = table.path(col)
         this.assignmentList.add(AssignValue.create(column, exp))
     }
 

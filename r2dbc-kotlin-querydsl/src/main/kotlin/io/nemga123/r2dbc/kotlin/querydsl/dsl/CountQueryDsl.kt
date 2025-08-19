@@ -13,7 +13,7 @@ import org.springframework.data.relational.core.sql.SelectBuilder.SelectFromAndJ
 @R2dbcDsl
 class CountQueryDsl (
     override val mappingContext: RelationalMappingContext,
-): DefaultExpressionDsl(mappingContext), CountQueryDslBuilder, CountQueryDslBuilder.CountWhereBuilder, CountQueryDslBuilder.SelectAndLockModeBuilder {
+): DefaultExpressionDsl(mappingContext), CountQueryDslBuilder, CountQueryDslBuilder.CountWhereBuilder, CountQueryDslBuilder.SelectAndLockModeBuilder, CountQueryDslBuilder.CountBuild {
     private val from: FromDsl = FromDsl(mappingContext)
     private var where: Condition? = null
     private var lockMode: LockMode? = null

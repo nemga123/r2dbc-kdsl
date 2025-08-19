@@ -6,14 +6,17 @@ import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
 
 interface CountQueryDslBuilder {
-    fun build(): Select
     fun from(dsl: FromDsl.() -> Unit): CountWhereBuilder
 
-    interface CountWhereBuilder: SelectAndLockModeBuilder {
+    interface CountWhereBuilder: SelectAndLockModeBuilder, CountBuild {
         fun where(dsl: CriteriaDsl.() -> Condition): SelectAndLockModeBuilder
     }
 
-    interface SelectAndLockModeBuilder {
+    interface SelectAndLockModeBuilder: CountBuild {
         fun lockMode(lockMode: LockMode): SelectAndLockModeBuilder
+    }
+
+    interface CountBuild {
+        fun build(): Select
     }
 }

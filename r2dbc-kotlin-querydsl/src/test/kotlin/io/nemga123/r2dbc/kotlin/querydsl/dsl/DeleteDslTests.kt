@@ -1,5 +1,6 @@
 package io.nemga123.r2dbc.kotlin.querydsl.dsl
 
+import io.nemga123.r2dbc.kotlin.querydsl.dsl.UpdateDslTests.Person
 import org.junit.jupiter.api.Test
 import org.springframework.data.annotation.Id
 import org.springframework.data.r2dbc.convert.MappingR2dbcConverter
@@ -20,7 +21,7 @@ import org.springframework.data.r2dbc.dialect.PostgresDialect
 import org.springframework.data.relational.core.sql.Delete
 
 /**
- * Unit tests for {@link InsertQueryDsl, @link InsertEntityQueryDsl}.
+ * Unit tests for {@link DeleteQueryDsl}.
  */
 class DeleteDslTests {
     private val dialect: R2dbcDialect = MySqlDialect()
@@ -58,7 +59,7 @@ class DeleteDslTests {
         val delete: Delete = DeleteQueryDsl(mappingContext).run {
             from(Person::class)
                 .where {
-                    path(Person::id).isEqualTo(number(1))
+                    table(Person::class).path(Person::id).isEqualTo(number(1))
                 }
                 .build()
         }

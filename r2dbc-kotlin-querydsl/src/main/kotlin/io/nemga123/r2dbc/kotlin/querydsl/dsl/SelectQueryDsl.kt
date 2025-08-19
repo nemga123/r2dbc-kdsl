@@ -1,17 +1,14 @@
 package io.nemga123.r2dbc.kotlin.querydsl.dsl
 
 import io.nemga123.r2dbc.kotlin.querydsl.annotation.R2dbcDsl
-import io.nemga123.r2dbc.kotlin.querydsl.dsl.SelectQueryDslBuilder.SelectAndLockModeBuilder
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
-import org.springframework.data.r2dbc.core.DefaultReactiveDataAccessStrategy
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.Expressions
 import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
 import org.springframework.data.relational.core.sql.SelectBuilder
-import org.springframework.data.relational.core.sql.SelectBuilder.SelectFromAndJoin
 
 @R2dbcDsl
 class SelectQueryDsl (
@@ -22,18 +19,25 @@ class SelectQueryDsl (
     SelectQueryDslBuilder.SelectWhereBuilder,
     SelectQueryDslBuilder.SelectWhereAndOrderByBuilder,
     SelectQueryDslBuilder.SelectAndLimitOffsetBuilder,
-    SelectQueryDslBuilder.SelectAndLockModeBuilder
+    SelectQueryDslBuilder.SelectAndLockModeBuilder,
+    SelectQueryDslBuilder.SelectBuild
 {
     private val from: FromDsl = FromDsl(mappingContext)
     private var limit: Long = -1L
     private var offset: Long = -1L
     private val select: ProjectionDsl = ProjectionDsl(mappingContext)
+    private var distinct: Boolean = false
     private var where: Condition? = null
     private val orderBy: OrderByDsl = OrderByDsl(mappingContext)
     private var lockMode: LockMode? = null
 
     override fun select(dsl: ProjectionDsl.() -> Unit): SelectQueryDslBuilder.SelectAndFromBuilder {
         this.select.apply(dsl)
+        return this
+    }
+
+    override fun distinct(distinct: Boolean): SelectQueryDsl {
+        this.distinct = distinct
         return this
     }
 
@@ -80,7 +84,7 @@ class SelectQueryDsl (
     }
 
 
-    override fun lockMode(lockMode: LockMode): SelectAndLockModeBuilder {
+    override fun lockMode(lockMode: LockMode): SelectQueryDslBuilder.SelectAndLockModeBuilder {
         this.lockMode = lockMode
         return this
     }
@@ -89,30 +93,30 @@ class SelectQueryDsl (
         var builder: SelectBuilder.SelectAndFrom = Select.builder()
             .select(select.build())
 
-        if (select.isDistinct()) {
+        if (distinct) {
             builder = builder.distinct()
         }
 
-        val selectFromAndJoinBuilder: SelectFromAndJoin = builder.from(from.buildFrom())
+        var selectFromAndJoinBuilder: SelectBuilder.SelectJoin = builder.from(from.buildFrom())
 
         for (join in from.buildJoin()) {
-            selectFromAndJoinBuilder.join(join.table, join.joinType).on(join.on)
+            selectFromAndJoinBuilder = selectFromAndJoinBuilder.join(join.table, join.joinType).on(join.on)
         }
 
-        where?.let { selectFromAndJoinBuilder.where(it) }
+        where?.let { (selectFromAndJoinBuilder as SelectBuilder.SelectWhere).where(it) }
 
-        lockMode?.let { selectFromAndJoinBuilder.lock(lockMode!!) }
+        lockMode?.let { (selectFromAndJoinBuilder as SelectBuilder.SelectLock).lock(lockMode!!) }
 
         if (limit > 0) {
-            selectFromAndJoinBuilder.limit(limit)
+            (selectFromAndJoinBuilder as SelectBuilder.SelectLimitOffset).limit(limit)
         }
 
         if (offset >= 0) {
-            selectFromAndJoinBuilder.offset(offset)
+            (selectFromAndJoinBuilder as SelectBuilder.SelectLimitOffset).offset(offset)
         }
 
         if (!orderBy.isEmpty()) {
-            selectFromAndJoinBuilder.orderBy(orderBy.build())
+            (selectFromAndJoinBuilder as SelectBuilder.SelectOrdered).orderBy(orderBy.build())
         }
 
         return selectFromAndJoinBuilder.build()

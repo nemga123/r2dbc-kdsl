@@ -18,7 +18,7 @@ import org.assertj.core.api.Assertions.*
 import org.springframework.data.r2dbc.dialect.MySqlDialect
 
 /**
- * Unit tests for {@link InsertQueryDsl, @link InsertEntityQueryDsl}.
+ * Unit tests for {@link UpdateQueryDsl}.
  */
 class UpdateDslTests {
     private val dialect: R2dbcDialect = MySqlDialect()
@@ -64,7 +64,7 @@ class UpdateDslTests {
                     set(Person::name, "James")
                 }
                 .where {
-                    or(path(Person::name).isEqualTo(string("Nick")), path(Person::name).isEqualTo(string("Michael")))
+                    or(table(Person::class).path(Person::name).isEqualTo(string("Nick")), table(Person::class).path(Person::name).isEqualTo(string("Michael")))
                 }.build()
         }
         val query = sqlRenderer.render(update)
@@ -83,7 +83,7 @@ class UpdateDslTests {
                     set(Person::name, "James")
                 }
                 .where {
-                    and(path(Person::name).isEqualTo(string("Nick")), path(Person::name).isEqualTo(string("Michael")))
+                    and(table(Person::class).path(Person::name).isEqualTo(string("Nick")), table(Person::class).path(Person::name).isEqualTo(string("Michael")))
                 }.build()
         }
         val query = sqlRenderer.render(update)
@@ -104,12 +104,12 @@ class UpdateDslTests {
                 .where {
                     or(
                         and(
-                            path(Person::name).isEqualTo(string("Nick")),
-                            path(Person::name).isEqualTo(string("Michael"))
+                            table(Person::class).path(Person::name).isEqualTo(string("Nick")),
+                            table(Person::class).path(Person::name).isEqualTo(string("Michael"))
                         ),
                         and(
-                            path(Person::name).isEqualTo(string("Ben")),
-                            path(Person::name).isEqualTo(string("Ann"))
+                            table(Person::class).path(Person::name).isEqualTo(string("Ben")),
+                            table(Person::class).path(Person::name).isEqualTo(string("Ann"))
                         ),
                     )
                 }.build()
