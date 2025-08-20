@@ -26,6 +26,7 @@ import org.springframework.data.r2dbc.convert.R2dbcCustomConversions
 import org.springframework.data.r2dbc.dialect.R2dbcDialect
 import org.springframework.data.r2dbc.mapping.R2dbcMappingContext
 import org.springframework.data.relational.core.conversion.AbstractRelationalConverter
+import org.springframework.data.relational.core.dialect.RenderContextFactory
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty
@@ -48,10 +49,11 @@ import kotlin.reflect.jvm.jvmErasure
 class R2dbcKotlinQueryDsl(
     private val dialect: R2dbcDialect,
     private val databaseClient: DatabaseClient,
-    private val sqlRenderer: SqlRenderer,
-    private val mappingContext: RelationalMappingContext,
 ): InsertQuery, InsertByEntityQuery, SelectQuery, ExistQuery, CountQuery, UpdateQuery, DeleteQuery {
     private val converter: R2dbcConverter = createConverter()
+    private val renderContextFactory: RenderContextFactory = RenderContextFactory(dialect)
+    private val sqlRenderer: SqlRenderer = SqlRenderer.create(renderContextFactory.createRenderContext())
+    private val mappingContext: RelationalMappingContext = converter.mappingContext as RelationalMappingContext
 
     private fun createConverter(): R2dbcConverter {
         val customConversions = R2dbcCustomConversions.of(dialect, emptyList<Any>())

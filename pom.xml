@@ -11,6 +11,7 @@
     <modules>
         <module>r2dbc-kotlin-querydsl</module>
     </modules>
+    <packaging>pom</packaging>
 
     <licenses>
         <license/>
