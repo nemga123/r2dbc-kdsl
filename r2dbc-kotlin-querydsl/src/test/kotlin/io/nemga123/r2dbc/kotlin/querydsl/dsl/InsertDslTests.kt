@@ -40,12 +40,13 @@ class InsertDslTests {
 
     @Test
     fun `simple_assignment_insert_test`() {
-        val insert: Insert = InsertQueryDsl<Person>(mappingContext, converter)
-            .apply {
+        val insert: Insert = InsertQueryDsl(mappingContext)
+            .run {
                 into(Person::class)
                     .set<Long>(Person::id, 10)
                     .set<String>(Person::name, "James")
-            }.build()
+                    .build()
+            }
 
         val query = sqlRenderer.render(insert)
         val sql = "INSERT INTO person (id, name) VALUES(10, 'James')"

@@ -31,6 +31,7 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty
 import org.springframework.data.relational.core.sql.Delete
+import org.springframework.data.relational.core.sql.Insert
 import org.springframework.data.relational.core.sql.SqlIdentifier
 import org.springframework.data.relational.core.sql.Update
 import org.springframework.data.relational.core.sql.render.SqlRenderer
@@ -195,25 +196,12 @@ class R2dbcKotlinQueryDsl(
         return result
     }
 
-    override suspend fun <T : Any> insert(dsl: InsertQueryDslBuilder<T>.() -> Unit): T {
-        val insertQueryBuilder = InsertQueryDsl<T>(mappingContext, converter).apply(dsl)
-        val insert = insertQueryBuilder.build()
-        val insertedEntity: T = insertQueryBuilder.buildEntity()
-        val persistentEntity: RelationalPersistentEntity<*> = this.mappingContext.getRequiredPersistentEntity(insertedEntity.javaClass)
+    override suspend fun <T : Any> insert(dsl: InsertQueryDslBuilder.() -> Insert): Long {
+        val insert = InsertQueryDsl(mappingContext).run(dsl)
 
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(insert) })
-            .filter { statement ->
-                val identifierColumns = this.getIdentifierColumns(persistentEntity)
-                if(identifierColumns.isEmpty()) {
-                    statement.returnGeneratedValues()
-                }
-
-                statement.returnGeneratedValues(dialect.renderForGeneratedValues(identifierColumns[0]))
-            }
-            .map(converter.populateIdIfNecessary(insertedEntity))
-            .all()
-            .last(insertedEntity)
-            .awaitSingle()
+            .fetch()
+            .awaitRowsUpdated()
 
         return result
     }

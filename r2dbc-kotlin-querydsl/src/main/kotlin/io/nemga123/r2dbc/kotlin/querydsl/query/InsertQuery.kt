@@ -1,9 +1,8 @@
 package io.nemga123.r2dbc.kotlin.querydsl.query
 
-import io.nemga123.r2dbc.kotlin.querydsl.dsl.InsertQueryDsl
 import io.nemga123.r2dbc.kotlin.querydsl.dsl.InsertQueryDslBuilder
-import kotlin.reflect.KClass
+import org.springframework.data.relational.core.sql.Insert
 
 interface InsertQuery {
-    suspend fun <T : Any> insert(dsl: InsertQueryDslBuilder<T>.() -> Unit): T
+    suspend fun <T : Any> insert(dsl: InsertQueryDslBuilder.() -> Insert): Long
 }
