@@ -1,17 +1,14 @@
 package io.nemga123.r2dbc.kdsl.dsl
 
 import io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
-import org.springframework.data.r2dbc.core.DefaultReactiveDataAccessStrategy
-import org.springframework.data.r2dbc.core.ReactiveDataAccessStrategy
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.sql.AssignValue
 import org.springframework.data.relational.core.sql.Assignment
 import org.springframework.data.relational.core.sql.Expression
-import org.springframework.data.relational.core.sql.SQL
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 
-@io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
+@R2dbcDsl
 class AssignmentDsl<T: Any>(
     override val mappingContext: RelationalMappingContext,
     private val clazz: KClass<T>,

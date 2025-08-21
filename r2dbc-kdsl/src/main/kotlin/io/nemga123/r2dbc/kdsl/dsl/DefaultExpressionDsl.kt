@@ -1,6 +1,6 @@
 package io.nemga123.r2dbc.kdsl.dsl
 
-import io.nemga123.r2dbc.kotlin.querydsl.support.PropertyUtils
+import io.nemga123.r2dbc.kdsl.support.PropertyUtils
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
 import org.springframework.data.relational.core.sql.BooleanLiteral

@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
 import org.springframework.data.relational.core.sql.SelectBuilder
 
-@io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
+@R2dbcDsl
 class SelectQueryDsl (
     override val mappingContext: RelationalMappingContext,
 ): DefaultExpressionDsl(mappingContext),

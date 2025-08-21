@@ -1,12 +1,13 @@
 package io.nemga123.r2dbc.kdsl.dsl
 
+import io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.Delete
 import org.springframework.data.relational.core.sql.DeleteBuilder
 import org.springframework.data.relational.core.sql.Table
-import kotlin.reflect.KClass
 
+@R2dbcDsl
 class DeleteQueryDsl(
     override val mappingContext: RelationalMappingContext,
 ): DefaultExpressionDsl(mappingContext), DeleteQueryDslBuilder, DeleteQueryDslBuilder.DeleteFromAndWhereBuilder, DeleteQueryDslBuilder.DeleteBuild {

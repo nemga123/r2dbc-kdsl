@@ -1,6 +1,6 @@
 package io.nemga123.r2dbc.kdsl.query
 
-import io.nemga123.r2dbc.kotlin.querydsl.dsl.InsertQueryDslBuilder
+import io.nemga123.r2dbc.kdsl.dsl.InsertQueryDslBuilder
 import org.springframework.data.relational.core.sql.Insert
 
 interface InsertQuery {

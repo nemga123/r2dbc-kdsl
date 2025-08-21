@@ -12,7 +12,7 @@ import org.springframework.util.Assert
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
-@io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
+@R2dbcDsl
 class UpdateQueryDsl private constructor(
     override val mappingContext: RelationalMappingContext,
     private val assignments: List<Assignment>,

@@ -3,7 +3,6 @@ package io.nemga123.r2dbc.kdsl.dsl
 import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.Delete
 import org.springframework.data.relational.core.sql.Table
-import kotlin.reflect.KClass
 
 interface DeleteQueryDslBuilder {
     fun from(table: Table): DeleteFromAndWhereBuilder

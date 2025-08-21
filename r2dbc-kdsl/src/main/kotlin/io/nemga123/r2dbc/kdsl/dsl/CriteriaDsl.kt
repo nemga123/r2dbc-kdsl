@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.Conditions
 
-@io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
+@R2dbcDsl
 class CriteriaDsl(
     override val mappingContext: RelationalMappingContext,
 ): DefaultExpressionDsl(mappingContext) {

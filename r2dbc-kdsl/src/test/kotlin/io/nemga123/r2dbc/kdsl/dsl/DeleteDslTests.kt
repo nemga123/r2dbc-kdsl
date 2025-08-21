@@ -1,6 +1,5 @@
 package io.nemga123.r2dbc.kdsl.dsl
 
-import io.nemga123.r2dbc.kotlin.querydsl.dsl.UpdateDslTests.Person
 import org.junit.jupiter.api.Test
 import org.springframework.data.annotation.Id
 import org.springframework.data.r2dbc.convert.MappingR2dbcConverter
@@ -12,12 +11,10 @@ import org.springframework.data.relational.core.dialect.RenderContextFactory
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.Table
-import org.springframework.data.relational.core.sql.Insert
 import org.springframework.data.relational.core.sql.render.SqlRenderer
 
 import org.assertj.core.api.Assertions.*
 import org.springframework.data.r2dbc.dialect.MySqlDialect
-import org.springframework.data.r2dbc.dialect.PostgresDialect
 import org.springframework.data.relational.core.sql.Delete
 
 /**

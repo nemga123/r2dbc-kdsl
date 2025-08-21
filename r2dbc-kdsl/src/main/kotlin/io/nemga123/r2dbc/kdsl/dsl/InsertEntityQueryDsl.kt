@@ -18,7 +18,7 @@ import org.springframework.r2dbc.core.PreparedOperation
 import org.springframework.util.ClassUtils
 import org.springframework.util.CollectionUtils
 
-@io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
+@R2dbcDsl
 class InsertEntityQueryDsl<T: Any>(
     override val mappingContext: RelationalMappingContext,
     private val converter: R2dbcConverter,

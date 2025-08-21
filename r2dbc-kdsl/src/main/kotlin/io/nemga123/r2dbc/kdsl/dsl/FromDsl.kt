@@ -5,9 +5,8 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.Join
 import org.springframework.data.relational.core.sql.TableLike
-import kotlin.reflect.KClass
 
-@io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
+@R2dbcDsl
 class FromDsl(
     override val mappingContext: RelationalMappingContext,
 ): DefaultExpressionDsl(mappingContext), FromDslBuilder, FromDslBuilder.FromWithJoinBuilder, FromDslBuilder.FromBuild {

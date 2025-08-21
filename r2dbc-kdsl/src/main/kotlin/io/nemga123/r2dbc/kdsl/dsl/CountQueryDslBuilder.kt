@@ -1,6 +1,5 @@
 package io.nemga123.r2dbc.kdsl.dsl
 
-import org.springframework.data.domain.Pageable
 import org.springframework.data.relational.core.sql.Condition
 import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select

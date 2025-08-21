@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.sql.Table
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 
-@io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
+@R2dbcDsl
 open class InsertQueryDsl(
     override val mappingContext: RelationalMappingContext,
 ): DefaultExpressionDsl(mappingContext), InsertQueryDslBuilder {

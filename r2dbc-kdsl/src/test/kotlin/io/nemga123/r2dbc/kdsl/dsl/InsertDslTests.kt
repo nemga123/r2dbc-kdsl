@@ -16,7 +16,6 @@ import org.springframework.data.relational.core.sql.render.SqlRenderer
 
 import org.assertj.core.api.Assertions.*
 import org.springframework.data.r2dbc.dialect.MySqlDialect
-import org.springframework.data.r2dbc.dialect.PostgresDialect
 
 /**
  * Unit tests for {@link InsertQueryDsl, @link InsertEntityQueryDsl}.

@@ -11,7 +11,6 @@ import org.springframework.data.relational.core.dialect.RenderContextFactory
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.Table
-import org.springframework.data.relational.core.sql.Insert
 import org.springframework.data.relational.core.sql.render.SqlRenderer
 
 import org.assertj.core.api.Assertions.*
