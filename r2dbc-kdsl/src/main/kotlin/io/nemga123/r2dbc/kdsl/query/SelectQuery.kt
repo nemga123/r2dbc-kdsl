@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.sql.Select
 import kotlin.reflect.KClass
 
 interface SelectQuery {
-    suspend fun <T : Any> selectAll(clazz: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): List<T>
-    suspend fun <T : Any> selectSingle(clazz: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): T
+    suspend fun <T : Any> selectAll(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): List<T>
+    suspend fun <T : Any> selectSingle(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): T
     suspend fun <T : Any> selectSingleOrNull(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): T?
 }

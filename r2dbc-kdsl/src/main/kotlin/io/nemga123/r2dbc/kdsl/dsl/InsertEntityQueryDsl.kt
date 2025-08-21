@@ -1,22 +1,12 @@
 package io.nemga123.r2dbc.kdsl.dsl
 
 import io.nemga123.r2dbc.kdsl.annotation.R2dbcDsl
-import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.data.mapping.PersistentPropertyAccessor
 import org.springframework.data.r2dbc.convert.R2dbcConverter
-import org.springframework.data.r2dbc.mapping.OutboundRow
-import org.springframework.data.r2dbc.support.ArrayUtils
-import org.springframework.data.relational.core.dialect.ArrayColumns
-import org.springframework.data.relational.core.dialect.Dialect
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
-import org.springframework.data.relational.core.mapping.RelationalPersistentProperty
 import org.springframework.data.relational.core.sql.Insert
 import org.springframework.data.relational.core.sql.InsertBuilder
-import org.springframework.r2dbc.core.Parameter
-import org.springframework.r2dbc.core.PreparedOperation
-import org.springframework.util.ClassUtils
-import org.springframework.util.CollectionUtils
 
 @R2dbcDsl
 class InsertEntityQueryDsl<T: Any>(
@@ -24,6 +14,7 @@ class InsertEntityQueryDsl<T: Any>(
     private val converter: R2dbcConverter,
     private val entity: T,
 ): DefaultExpressionDsl(mappingContext) {
+    @Suppress("UNCHECKED_CAST")
     internal fun build(): Insert {
         val persistentEntity: RelationalPersistentEntity<T> = this.mappingContext.getRequiredPersistentEntity(entity::class.java) as RelationalPersistentEntity<T>
         val propertyAccessor: PersistentPropertyAccessor<T> = persistentEntity.getPropertyAccessor(entity)
@@ -48,6 +39,7 @@ class InsertEntityQueryDsl<T: Any>(
         return insertBuilder.build()
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun <T: Any> setVersionIfNecessary(
         persistentEntity: RelationalPersistentEntity<T>,
         propertyAccessor: PersistentPropertyAccessor<*>,

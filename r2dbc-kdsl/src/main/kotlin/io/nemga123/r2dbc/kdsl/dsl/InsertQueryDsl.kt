@@ -31,6 +31,7 @@ open class InsertQueryDsl(
             return this
         }
 
+        @Suppress("UNCHECKED_CAST")
         override fun build() : Insert {
             val persistentEntity: RelationalPersistentEntity<T> = this.mappingContext.getRequiredPersistentEntity(intoClazz.java) as RelationalPersistentEntity<T>
             this.setVersionIfNecessary(persistentEntity)
