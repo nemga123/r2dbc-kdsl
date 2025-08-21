@@ -22,13 +22,13 @@ class CountQueryDsl (
     private var where: Condition? = null
     private var lockMode: LockMode? = null
 
-    override fun from(dsl: FromDsl.() -> Unit): _root_ide_package_.io.nemga123.r2dbc.kdsl.dsl.CountQueryDslBuilder.CountWhereBuilder {
+    override fun from(dsl: FromDsl.() -> Unit): CountQueryDslBuilder.CountWhereBuilder {
         this.from.apply(dsl)
         return this
     }
 
 
-    override fun where(dsl: CriteriaDsl.() -> Condition): _root_ide_package_.io.nemga123.r2dbc.kdsl.dsl.CountQueryDslBuilder.SelectAndLockModeBuilder {
+    override fun where(dsl: CriteriaDsl.() -> Condition): CountQueryDslBuilder.SelectAndLockModeBuilder {
         this.where = CriteriaDsl(mappingContext).run(dsl)
         return this
     }

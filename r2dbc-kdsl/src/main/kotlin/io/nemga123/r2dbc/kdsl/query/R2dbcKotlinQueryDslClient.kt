@@ -1,5 +1,6 @@
 package io.nemga123.r2dbc.kdsl.query
 
+import io.nemga123.r2dbc.kdsl.dsl.CountQueryDsl
 import io.nemga123.r2dbc.kdsl.dsl.CountQueryDslBuilder
 import io.nemga123.r2dbc.kdsl.dsl.DeleteQueryDsl
 import io.nemga123.r2dbc.kdsl.dsl.DeleteQueryDslBuilder
@@ -30,6 +31,7 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentEnti
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty
 import org.springframework.data.relational.core.sql.Delete
 import org.springframework.data.relational.core.sql.Insert
+import org.springframework.data.relational.core.sql.Select
 import org.springframework.data.relational.core.sql.SqlIdentifier
 import org.springframework.data.relational.core.sql.Update
 import org.springframework.data.relational.core.sql.render.SqlRenderer
@@ -64,9 +66,8 @@ class R2dbcKotlinQueryDslClient(
     }
 
 
-    override suspend fun count(dsl: CountQueryDslBuilder.() -> Unit): Long {
-        val selectBuilder = _root_ide_package_.io.nemga123.r2dbc.kdsl.dsl.CountQueryDsl(mappingContext).apply(dsl)
-        val select = selectBuilder.build()
+    override suspend fun count(dsl: CountQueryDslBuilder.() -> Select): Long {
+        val select = CountQueryDsl(mappingContext).run(dsl)
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(select) })
             .map { r, _ -> r.get(0, Long::class.java) ?: 0L }
             .first()
@@ -75,9 +76,8 @@ class R2dbcKotlinQueryDslClient(
         return result
     }
 
-    override suspend fun exist(dsl: SelectQueryDslBuilder.() -> Unit): Boolean {
-        val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
-        val select = selectBuilder.build()
+    override suspend fun exist(dsl: SelectQueryDslBuilder.() -> Select): Boolean {
+        val select = SelectQueryDsl(mappingContext).run(dsl)
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(select) })
             .map { r, _ -> r }
             .first()
@@ -86,31 +86,28 @@ class R2dbcKotlinQueryDslClient(
         return result
     }
 
-    override suspend fun <T : Any> selectAll(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Unit): List<T> {
+    override suspend fun <T : Any> selectAll(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): List<T> {
         Assert.notNull(retType, "Entity class must not be null")
 
-        val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
-        val select = selectBuilder.build()
+        val select = SelectQueryDsl(mappingContext).run(dsl)
         val result = resultProjection(retType, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::all)
 
         return result.asFlow().toList()
     }
 
-    override suspend fun <T : Any> selectSingle(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Unit): T {
+    override suspend fun <T : Any> selectSingle(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): T {
         Assert.notNull(retType, "Entity class must not be null")
 
-        val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
-        val select = selectBuilder.build()
+        val select = SelectQueryDsl(mappingContext).run(dsl)
         val result = resultProjection(retType, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::one)
 
         return result.awaitSingle()
     }
 
-    override suspend fun <T : Any> selectSingleOrNull(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Unit): T? {
+    override suspend fun <T : Any> selectSingleOrNull(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): T? {
         Assert.notNull(retType, "Entity class must not be null")
 
-        val selectBuilder = SelectQueryDsl(mappingContext).apply(dsl)
-        val select = selectBuilder.build()
+        val select = SelectQueryDsl(mappingContext).run(dsl)
         val result = resultProjection(retType, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::one)
 
         return result.awaitSingleOrNull()
