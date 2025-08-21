@@ -43,10 +43,10 @@ By default, this module needs R2DBC-spi [ConnectionFactory](https://r2dbc.io/spe
 @Configuration
 class R2dbcConfig {
     @Bean
-    fun r2dbcKotlinQueryDsl(connectionFactory: ConnectionFactory): R2dbcKotlinQueryDsl {
+    fun r2dbcKotlinQueryDslClient(connectionFactory: ConnectionFactory): R2dbcKotlinQueryDslClient {
         val r2dbcDatabaseClient = DatabaseClient.create(connectionFactory)
         val dialect = DialectResolver.getDialect(connectionFactory)
-        return R2dbcKotlinQueryDsl(
+        return R2dbcKotlinQueryDslClient(
             dialect = dialect,
             databaseClient = r2dbcDatabaseClient,
         )
@@ -89,7 +89,7 @@ data class Person(
  * "SELECT p.id AS id1 FROM person p"
  */
 suspend fun getAllIds(): List<Person> {
-    return databaseClient.selectAll(Person::class) {
+    return r2dbcKotlinQueryDslClient.selectAll(Person::class) {
         val sourceTable = table(Person::class).`as`("p")   // Use table aliasing
         select {
             select(
@@ -118,7 +118,7 @@ data class PersonIdDto(
  * @return Projected Dto List
  */
 suspend fun getAllIds(): List<PersonIdDto> {
-    return databaseClient.selectAll(PersonIdDto::class) {
+    return r2dbcKotlinQueryDslClient.selectAll(PersonIdDto::class) {
         val sourceTable = table(Person::class).`as`("p")
         select {
             select(
@@ -135,7 +135,7 @@ suspend fun getAllIds(): List<PersonIdDto> {
  * @return Long List
  */
 suspend fun getAllIds(): List<Long> {
-    return databaseClient.selectAll(Long::class) {
+    return r2dbcKotlinQueryDslClient.selectAll(Long::class) {
         val sourceTable = table(Person::class).`as`("p")
         select {
             select(
@@ -157,7 +157,7 @@ You can use join by `join(:table, :condition)` in From dsl.
  * "SELECT p1.id FROM person p1 JOIN person p2 ON p1.id > p2.id"
  */
 suspend fun joinSubquery(): List<PersonIdDto> {
-    return databaseClient.selectAll(PersonIdDto::class) {
+    return r2dbcKotlinQueryDslClient.selectAll(PersonIdDto::class) {
         val sourceTable = table(Person::class).`as`("p1")
         val joinedTable = table(Person::class).`as`("p2")
         select {
@@ -180,7 +180,7 @@ You can use subqueries by `subquery(:alias)` and select dsl.
  * "SELECT p.id FROM person p JOIN (SELECT p.id FROM person p WHERE p.id = 1) sub1 ON sub1.id = p.id"
  */
 suspend fun joinSubquery(): List<PersonIdDto> {
-    return databaseClient.selectAll(PersonIdDto::class) {
+    return r2dbcKotlinQueryDslClient.selectAll(PersonIdDto::class) {
         val sourceTable = table(Person::class).`as`("p")
         val subquery = subquery("sub1") {
             select {
@@ -219,7 +219,7 @@ You can use initialized entity object to insert rows.
 ```kotlin
 suspend fun insertByEntity(): Person {
     val person: Person = Person(id = 1, name = "James")
-    return databaseClient.insert(person)
+    return r2dbcKotlinQueryDslClient.insert(person)
 }
 ```
 
@@ -230,7 +230,7 @@ You can also use query dsl to insert rows by structured query.
  * Insert by query dsl, return number of rows inserted
  */
 suspend fun insertByQuery(): Long {
-    return databaseClient.insert {
+    return r2dbcKotlinQueryDslClient.insert {
         into(Person::class)
             .set<Long>(Person::id, 1)
             .set<String>(Person::name, "James")
@@ -250,7 +250,7 @@ suspend fun insertByQuery(): Long {
  * "UPDATE person SET name = 'James' WHERE (person.name = 'Nick' OR person.name = 'Michael')"
  */
 suspend fun insertByEntity(): Long {
-    return databaseClient.update {
+    return r2dbcKotlinQueryDslClient.update {
         from(Person::class)
             .assign {
                 set(Person::name, "James")
@@ -276,7 +276,7 @@ suspend fun insertByEntity(): Long {
  * "DELETE FROM person WHERE person.id = 1"
  */
 suspend fun insertByEntity(): Long {
-    return databaseClient.delete {
+    return r2dbcKotlinQueryDslClient.delete {
         val sourceTable = table(Person::class)
         from(sourceTable)
             .where {

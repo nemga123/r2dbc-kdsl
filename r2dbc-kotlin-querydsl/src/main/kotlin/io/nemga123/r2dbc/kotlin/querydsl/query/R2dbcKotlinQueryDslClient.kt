@@ -47,7 +47,7 @@ import kotlin.reflect.cast
 import kotlin.reflect.full.createType
 import kotlin.reflect.jvm.jvmErasure
 
-class R2dbcKotlinQueryDsl(
+class R2dbcKotlinQueryDslClient(
     private val dialect: R2dbcDialect,
     private val databaseClient: DatabaseClient,
 ): InsertQuery, InsertByEntityQuery, SelectQuery, ExistQuery, CountQuery, UpdateQuery, DeleteQuery {
