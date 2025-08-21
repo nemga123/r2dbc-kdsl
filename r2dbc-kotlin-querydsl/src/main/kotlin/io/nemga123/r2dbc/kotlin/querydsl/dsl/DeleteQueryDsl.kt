@@ -13,8 +13,8 @@ class DeleteQueryDsl(
     private lateinit var table: Table
     private var where: Condition? = null
 
-    override fun <T: Any> from(clazz: KClass<T>): DeleteQueryDslBuilder.DeleteFromAndWhereBuilder {
-        table = table(clazz)
+    override fun from(table: Table): DeleteQueryDslBuilder.DeleteFromAndWhereBuilder {
+        this.table = table
         return this
     }
 

@@ -44,7 +44,8 @@ class DeleteDslTests {
     fun `simple_delete_test`() {
         val delete: Delete = DeleteQueryDsl(mappingContext)
             .run {
-                from(Person::class)
+                val sourceTable = table(Person::class)
+                from(sourceTable)
                     .build()
             }
 
@@ -57,9 +58,10 @@ class DeleteDslTests {
     @Test
     fun `simple_delete_with_condition_test`() {
         val delete: Delete = DeleteQueryDsl(mappingContext).run {
-            from(Person::class)
+            val sourceTable = table(Person::class)
+            from(sourceTable)
                 .where {
-                    table(Person::class).path(Person::id).isEqualTo(number(1))
+                    sourceTable.path(Person::id).isEqualTo(number(1))
                 }
                 .build()
         }

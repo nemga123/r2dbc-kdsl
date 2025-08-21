@@ -21,7 +21,7 @@ The goal: make the kotlin user build more complicated R2DBC query by the dsl way
 ## Feature
 
 ---
-This modules..
+These modules:
 
 1. uses Kotlin reflection to build table and column, so it does not need additional build time to create table or column objects.
 2. uses KClass, KProperty instead of the name of them to reflect table and column name, so queries are type referenced 
@@ -54,6 +54,8 @@ class R2dbcConfig {
 }
 ```
 
+<br>
+
 ### Query
 
 ---
@@ -84,10 +86,10 @@ data class Person(
 )
 
 /**
- * "SELECT p.id FROM person p"
+ * "SELECT p.id AS id1 FROM person p"
  */
-suspend fun getAllIds(): List<PersonIdDto> {
-    return databaseClient.selectAll(PersonIdDto::class) {
+suspend fun getAllIds(): List<Person> {
+    return databaseClient.selectAll(Person::class) {
         val sourceTable = table(Person::class).`as`("p")   // Use table aliasing
         select {
             select(
@@ -200,6 +202,87 @@ suspend fun joinSubquery(): List<PersonIdDto> {
         }
         .from { from(sourceTable).join(subquery, subquery.column("id").isEqualTo(sourceTable.column("id"))) }
         .build()
+    }
+}
+```
+
+<br>
+
+### Insert Query
+
+---
+
+#### Insert With Entity
+
+You can use initialized entity object to insert rows.
+
+```kotlin
+suspend fun insertByEntity(): Person {
+    val person: Person = Person(id = 1, name = "James")
+    return databaseClient.insert(person)
+}
+```
+
+You can also use query dsl to insert rows by structured query.
+
+```kotlin
+/**
+ * Insert by query dsl, return number of rows inserted
+ */
+suspend fun insertByQuery(): Long {
+    return databaseClient.insert {
+        into(Person::class)
+            .set<Long>(Person::id, 1)
+            .set<String>(Person::name, "James")
+            .build()
+    }
+}
+```
+
+<br>
+
+### Update Query
+
+---
+
+```kotlin
+/**
+ * "UPDATE person SET name = 'James' WHERE (person.name = 'Nick' OR person.name = 'Michael')"
+ */
+suspend fun insertByEntity(): Long {
+    return databaseClient.update {
+        from(Person::class)
+            .assign {
+                set(Person::name, "James")
+            }
+            .where {
+                or(
+                    table(Person::class).path(Person::name).isEqualTo(string("Nick")),
+                    table(Person::class).path(Person::name).isEqualTo(string("Michael"))
+                )
+            }.build()
+    }
+}
+```
+
+<br>
+
+### Delete Query
+
+---
+
+```kotlin
+/**
+ * "DELETE FROM person WHERE person.id = 1"
+ */
+suspend fun insertByEntity(): Long {
+    return databaseClient.delete {
+        val sourceTable = table(Person::class)
+        from(sourceTable)
+            .where {
+                sourceTable.path(Person::id).isEqualTo(number(1))
+            }
+            .build()
     }
 }
 ```
