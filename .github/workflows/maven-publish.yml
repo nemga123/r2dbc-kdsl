@@ -25,7 +25,10 @@ jobs:
         server-id: central # Value of the distributionManagement/repository/id field of the pom.xml
 
     - name: COPY setting.xml
-      run: echo ${{ MVN_SETTINGS }} >> settings.xml
+      env:
+        MVN_SETTINGS: ${{ secrets.MVN_SETTINGS }}
+      run: |
+        echo "$MVN_SETTINGS" >> settings.xml
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
