@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.nemga123</groupId>
-    <artifactId>r2dbc-kotlin-querydsl-parent</artifactId>
+    <artifactId>r2dbc-kdsl-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>r2dbc-kotlin-query-dsl-parent</name>
-    <description>r2dbc-kotlin-query-dsl-parent</description>
+    <name>r2dbc-kdsl-parent</name>
+    <description>r2dbc-kdsl-parent</description>
     <url/>
     <modules>
-        <module>r2dbc-kotlin-querydsl</module>
+        <module>r2dbc-kdsl</module>
     </modules>
     <packaging>pom</packaging>
 

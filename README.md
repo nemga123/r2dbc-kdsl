@@ -1,8 +1,8 @@
-# R2DBC Kotlin Querydsl
+# R2DBC Kdsl
 
 ---
 
-R2DBC Kotlin Querydsl provides extensions of [spring-data-r2dbc](https://github.com/spring-projects/spring-data-relational)
+R2DBC Kdsl(Kotlin QueryDsl) provides extensions of [spring-data-r2dbc](https://github.com/spring-projects/spring-data-relational)
 that enable to build R2DBC queries by kotlin dsl and coroutines.
 
 ## Motivation
