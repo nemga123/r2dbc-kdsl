@@ -1,4 +1,4 @@
-package io.nemga123.r2dbc.kdsl.query
+package io.nemga123.r2dbc.kdsl.client
 
 import io.nemga123.r2dbc.kdsl.dsl.CountQueryDsl
 import io.nemga123.r2dbc.kdsl.dsl.CountQueryDslBuilder
@@ -11,6 +11,13 @@ import io.nemga123.r2dbc.kdsl.dsl.SelectQueryDsl
 import io.nemga123.r2dbc.kdsl.dsl.SelectQueryDslBuilder
 import io.nemga123.r2dbc.kdsl.dsl.UpdateQueryDsl
 import io.nemga123.r2dbc.kdsl.dsl.UpdateQueryDslBuilder
+import io.nemga123.r2dbc.kdsl.query.CountQuery
+import io.nemga123.r2dbc.kdsl.query.DeleteQuery
+import io.nemga123.r2dbc.kdsl.query.ExistQuery
+import io.nemga123.r2dbc.kdsl.query.InsertByEntityQuery
+import io.nemga123.r2dbc.kdsl.query.InsertQuery
+import io.nemga123.r2dbc.kdsl.query.SelectQuery
+import io.nemga123.r2dbc.kdsl.query.UpdateQuery
 import io.r2dbc.spi.Row
 import io.r2dbc.spi.RowMetadata
 import java.util.function.BiFunction
@@ -37,8 +44,8 @@ import org.springframework.data.relational.core.sql.Update
 import org.springframework.data.relational.core.sql.render.SqlRenderer
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec
-import org.springframework.r2dbc.core.QueryOperation
 import org.springframework.r2dbc.core.RowsFetchSpec
+import org.springframework.r2dbc.core.QueryOperation
 import org.springframework.r2dbc.core.awaitRowsUpdated
 import org.springframework.util.Assert
 import kotlin.jvm.optionals.getOrElse
@@ -47,7 +54,7 @@ import kotlin.reflect.cast
 import kotlin.reflect.full.createType
 import kotlin.reflect.jvm.jvmErasure
 
-class R2dbcKotlinQueryDslClient(
+class R2dbcKdslClient (
     private val dialect: R2dbcDialect,
     private val databaseClient: DatabaseClient,
 ): InsertQuery, InsertByEntityQuery, SelectQuery, ExistQuery, CountQuery, UpdateQuery, DeleteQuery {
