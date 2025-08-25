@@ -21,10 +21,6 @@ class OrderByDsl(
         targetExpression.add(OrderByField.from(expression, Sort.Direction.DESC))
     }
 
-    fun from(expression: Expression, direction: Direction) {
-        targetExpression.add(OrderByField.from(expression, direction))
-    }
-
     internal fun build(): List<OrderByField> = targetExpression
     internal fun isEmpty(): Boolean = targetExpression.isEmpty()
 }

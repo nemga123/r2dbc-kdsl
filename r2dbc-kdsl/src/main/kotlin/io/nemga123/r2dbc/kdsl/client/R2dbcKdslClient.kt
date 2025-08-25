@@ -47,7 +47,6 @@ import org.springframework.r2dbc.core.DatabaseClient.GenericExecuteSpec
 import org.springframework.r2dbc.core.RowsFetchSpec
 import org.springframework.r2dbc.core.QueryOperation
 import org.springframework.r2dbc.core.awaitRowsUpdated
-import org.springframework.util.Assert
 import kotlin.jvm.optionals.getOrElse
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
@@ -93,52 +92,53 @@ class R2dbcKdslClient (
         return result
     }
 
-    override suspend fun <T : Any> selectAll(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): List<T> {
-        Assert.notNull(retType, "Entity class must not be null")
-
+    override suspend fun <T : Any> selectAll(retType: KClass<T>, dsl: SelectQueryDsl.() -> Select): List<T> {
         val select = SelectQueryDsl(mappingContext).run(dsl)
-        val result = resultProjection(retType, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::all)
+        val result = resultProjection(this.getRowMapper(retType), databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::all)
+
+        return result.asFlow().toList()
+    }
+    
+    override suspend fun <T : Any> selectAll(rowMapper: (Row, RowMetadata) -> T, dsl: SelectQueryDsl.() -> Select): List<T> {
+        val select = SelectQueryDsl(mappingContext).run(dsl)
+        val result = resultProjection(rowMapper, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::all)
 
         return result.asFlow().toList()
     }
 
-    override suspend fun <T : Any> selectSingle(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): T {
-        Assert.notNull(retType, "Entity class must not be null")
-
+    override suspend fun <T : Any> selectSingle(retType: KClass<T>, dsl: SelectQueryDsl.() -> Select): T? {
         val select = SelectQueryDsl(mappingContext).run(dsl)
-        val result = resultProjection(retType, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::one)
-
-        return result.awaitSingle()
-    }
-
-    override suspend fun <T : Any> selectSingleOrNull(retType: KClass<T>, dsl: SelectQueryDslBuilder.() -> Select): T? {
-        Assert.notNull(retType, "Entity class must not be null")
-
-        val select = SelectQueryDsl(mappingContext).run(dsl)
-        val result = resultProjection(retType, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::one)
+        val result = resultProjection(this.getRowMapper(retType), databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::one)
 
         return result.awaitSingleOrNull()
     }
 
-    private fun <T : Any, P: Publisher<T>> resultProjection(clazz: KClass<T>, executeSpec: GenericExecuteSpec, resultHandler: (RowsFetchSpec<T>) -> P): P {
-        val result: P = resultHandler.invoke(getRowFetchSpec(clazz, executeSpec))
+    override suspend fun <T : Any> selectSingle(rowMapper: BiFunction<Row, RowMetadata, T>, dsl: SelectQueryDsl.() -> Select): T? {
+        val select = SelectQueryDsl(mappingContext).run(dsl)
+        val result = resultProjection(rowMapper, databaseClient.sql(QueryOperation { sqlRenderer.render(select) }), RowsFetchSpec<T>::one)
+
+        return result.awaitSingleOrNull()
+    }
+
+    private fun <T : Any, P: Publisher<T>> resultProjection(rowMapper: BiFunction<Row, RowMetadata, T>, executeSpec: GenericExecuteSpec, resultHandler: (RowsFetchSpec<T>) -> P): P {
+        val result: P = resultHandler.invoke(getRowFetchSpec(rowMapper, executeSpec))
         return result
     }
 
-    private fun <T : Any> getRowFetchSpec(returnClass: KClass<T>, executeSpec: GenericExecuteSpec): RowsFetchSpec<T> {
-        return executeSpec.map(getRowMapper(returnClass));
+    private fun <T : Any> getRowFetchSpec(rowMapper: BiFunction<Row, RowMetadata, T>, executeSpec: GenericExecuteSpec): RowsFetchSpec<T> {
+        return executeSpec.map(rowMapper);
     }
 
-    private fun <T : Any> getRowMapper(returnClass: KClass<T>): BiFunction<Row, RowMetadata, T> {
-        val isSimpleType = converter.isSimpleType(returnClass.java)
+    private fun <T : Any> getRowMapper(retType: KClass<T>): BiFunction<Row, RowMetadata, T> {
+        val isSimpleType = converter.isSimpleType(retType.java)
         val rowMapper: BiFunction<Row, RowMetadata, T> = if (converter is AbstractRelationalConverter
-            && converter.conversions.hasCustomReadTarget(Row::class.java, returnClass.java)
+            && converter.conversions.hasCustomReadTarget(Row::class.java, retType.java)
         ) {
             val conversionService = converter.getConversionService()
             BiFunction { row: Row, _: RowMetadata ->
                 conversionService.convert(
                     row,
-                    returnClass.java
+                    retType.java
                 ) as T
             }
         } else if (isSimpleType) {
@@ -148,14 +148,14 @@ class R2dbcKdslClient (
                 }
 
                 return@BiFunction try {
-                    returnClass.cast(row.get(0))
+                    retType.cast(row.get(0))
                 } catch (ex: Exception) {
-                    throw RuntimeException("CANNOT CAST ROW TYPE ${rowMetadata.getColumnMetadata(0).type} TO ${returnClass.createType()}")
+                    throw RuntimeException("CANNOT CAST ROW TYPE ${rowMetadata.getColumnMetadata(0).type} TO ${retType.createType()}")
                 }
             }
         } else {
             BiFunction { row: Row, rowMetadata: RowMetadata ->
-                val constructor = returnClass.constructors.stream()
+                val constructor = retType.constructors.stream()
                     .filter { it.parameters.size == rowMetadata.columnMetadatas.size }
                     .findFirst().getOrElse { throw RuntimeException("INVALID CONSTRUCTOR") }
 

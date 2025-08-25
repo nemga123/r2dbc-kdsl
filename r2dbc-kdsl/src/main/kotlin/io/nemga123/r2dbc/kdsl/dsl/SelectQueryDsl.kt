@@ -5,10 +5,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.sql.Condition
+import org.springframework.data.relational.core.sql.Expression
 import org.springframework.data.relational.core.sql.Expressions
 import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
 import org.springframework.data.relational.core.sql.SelectBuilder
+import kotlin.reflect.KClass
 
 @R2dbcDsl
 class SelectQueryDsl (
@@ -22,17 +24,17 @@ class SelectQueryDsl (
     SelectQueryDslBuilder.SelectAndLockModeBuilder,
     SelectQueryDslBuilder.SelectBuild
 {
-    private val from: FromDsl = FromDsl(mappingContext)
+    private lateinit var from: FromDslBuilder.FromBuild
     private var limit: Long = -1L
     private var offset: Long = -1L
-    private val select: ProjectionDsl = ProjectionDsl(mappingContext)
+    private val select: MutableList<Expression> = mutableListOf()
     private var distinct: Boolean = false
     private var where: Condition? = null
     private val orderBy: OrderByDsl = OrderByDsl(mappingContext)
     private var lockMode: LockMode? = null
 
-    override fun select(dsl: ProjectionDsl.() -> Unit): SelectQueryDslBuilder.SelectAndFromBuilder {
-        this.select.apply(dsl)
+    override fun select(vararg select: Expression): SelectQueryDslBuilder.SelectAndFromBuilder {
+        this.select.addAll(select)
         return this
     }
 
@@ -41,8 +43,8 @@ class SelectQueryDsl (
         return this
     }
 
-    override fun from(dsl: FromDsl.() -> Unit): SelectQueryDslBuilder.SelectWhereBuilder {
-        this.from.apply(dsl)
+    override fun from(dsl: FromDslBuilder.() -> FromDslBuilder.FromBuild): SelectQueryDslBuilder.SelectWhereBuilder {
+        this.from = FromDsl(mappingContext).run(dsl)
         return this
     }
 
@@ -70,7 +72,10 @@ class SelectQueryDsl (
             if (sort.isSorted) {
                 this.orderBy.apply {
                     sort.forEach { s ->
-                        from(Expressions.just(s.property), s.direction)
+                        when(s.direction) {
+                            Sort.Direction.ASC -> asc(Expressions.just(s.property))
+                            Sort.Direction.DESC -> desc(Expressions.just(s.property))
+                        }
                     }
                 }
             }
@@ -91,7 +96,7 @@ class SelectQueryDsl (
 
     override fun build(): Select {
         var builder: SelectBuilder.SelectAndFrom = Select.builder()
-            .select(select.build())
+            .select(select)
 
         if (distinct) {
             builder = builder.distinct()

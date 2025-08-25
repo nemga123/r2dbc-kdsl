@@ -2,15 +2,16 @@ package io.nemga123.r2dbc.kdsl.dsl
 
 import org.springframework.data.domain.Pageable
 import org.springframework.data.relational.core.sql.Condition
+import org.springframework.data.relational.core.sql.Expression
 import org.springframework.data.relational.core.sql.LockMode
 import org.springframework.data.relational.core.sql.Select
 
 interface SelectQueryDslBuilder {
-    fun select(dsl: ProjectionDsl.() -> Unit): SelectAndFromBuilder
+    fun select(vararg select: Expression): SelectAndFromBuilder
 
     interface SelectAndFromBuilder {
         fun distinct(distinct: Boolean): SelectAndFromBuilder
-        fun from(dsl: FromDsl.() -> Unit): SelectWhereBuilder
+        fun from(dsl: FromDslBuilder.() -> FromDslBuilder.FromBuild): SelectWhereBuilder
     }
 
     interface SelectWhereBuilder: SelectAndLimitOffsetBuilder, SelectWhereAndOrderByBuilder, SelectAndLockModeBuilder, SelectBuild {

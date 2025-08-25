@@ -14,8 +14,10 @@ import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.relational.core.sql.render.SqlRenderer
 
 import org.assertj.core.api.Assertions.*
+import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.dialect.MySqlDialect
 import org.springframework.data.relational.core.sql.Select
+import org.springframework.r2dbc.core.DatabaseClient
 
 /**
  * Unit tests for {@link SelectQueryDsl}.
@@ -38,16 +40,15 @@ class SelectDslTests {
 
     @Test
     fun `simple_select_test`() {
+
         val select: Select = SelectQueryDsl(mappingContext).run {
             val sourceTable = table(Person::class).`as`("p")
-            select {
-                select(
-                    sourceTable.path(Person::id),
-                )
-            }
-            .distinct(true)
-            .from { from(sourceTable) }
-            .build()
+            select(
+                sourceTable.path(Person::id),
+            )
+                .distinct(true)
+                .from { from(sourceTable) }
+                .build()
         }
 
         val query = sqlRenderer.render(select)
@@ -60,11 +61,9 @@ class SelectDslTests {
     fun `simple_select_with_condition_test`() {
         val select: Select = SelectQueryDsl(mappingContext).run {
             val sourceTable = table(Person::class).`as`("p")
-            select {
-                select(
-                    sourceTable.path(Person::id),
-                )
-            }
+            select(
+                sourceTable.path(Person::id),
+            )
             .distinct(true)
             .from { from(sourceTable) }
             .where {
@@ -83,14 +82,12 @@ class SelectDslTests {
     fun `select_with_simple_function_test`() {
         val select: Select = SelectQueryDsl(mappingContext).run {
             val sourceTable = table(Person::class).`as`("p")
-            select {
-                select(
-                    greatest(sourceTable.path(Person::id)),
-                    least(sourceTable.path(Person::id)),
-                    lower(sourceTable.path(Person::id)),
-                    upper(sourceTable.path(Person::id)),
-                )
-            }
+            select(
+                greatest(sourceTable.path(Person::id)),
+                least(sourceTable.path(Person::id)),
+                lower(sourceTable.path(Person::id)),
+                upper(sourceTable.path(Person::id)),
+            )
             .from { from(sourceTable) }
             .build()
         }
@@ -106,11 +103,9 @@ class SelectDslTests {
         val select: Select = SelectQueryDsl(mappingContext).run {
             val sourceTable = table(Person::class).`as`("p")
             val subquery = subquery("sub1") {
-                select {
-                    select(
-                        sourceTable.path(Person::id),
-                    )
-                }
+                select(
+                    sourceTable.path(Person::id),
+                )
                 .from { from(sourceTable) }
                 .where {
                     sourceTable.path(Person::id).isEqualTo(number(1))
@@ -118,22 +113,18 @@ class SelectDslTests {
                 .build()
             }
             val subquery2 = subquery("sub2") {
-                select {
-                    select(
-                        sourceTable.path(Person::id),
-                    )
-                }
+                select(
+                    sourceTable.path(Person::id),
+                )
                 .from { from(sourceTable) }
                 .where {
                     sourceTable.path(Person::id).isEqualTo(number(1))
                 }
                 .build()
             }
-            select {
-                select(
-                    subquery.column("id")
-                )
-            }
+            select(
+                subquery.column("id")
+            )
             .from { from(subquery).join(subquery2, subquery.column("id").isEqualTo(subquery2.column("id"))) }
             .build()
         }
@@ -149,16 +140,15 @@ class SelectDslTests {
         val select: Select = SelectQueryDsl(mappingContext).run {
             val sourceTable = table(Person::class).`as`("p1")
             val joinTable = table(Person::class).`as`("p2")
-            select {
-                select(
-                    sourceTable.path(Person::id),
-                    sourceTable.path(Person::name)
-                )
-            }
+            select(
+                sourceTable.path(Person::id),
+                sourceTable.path(Person::name)
+            )
             .from {
                 from(sourceTable)
                     .join(joinTable, sourceTable.path(Person::id).isEqualTo(joinTable.path(Person::id)))
             }
+                .page(Pageable.ofSize(10).withPage(1))
             .build()
         }
 
