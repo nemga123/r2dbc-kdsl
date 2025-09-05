@@ -10,11 +10,11 @@ interface UpdateQueryDslBuilder {
     fun <T: Any> from(tableClazz: KClass<T>): UpdateAndValuesBuilder<T>
 
     interface UpdateAndValuesBuilder<T: Any> {
-        fun assign(dsl: io.nemga123.r2dbc.kdsl.dsl.AssignmentDsl<T>.() -> Unit): UpdateAndWhereBuilder
+        fun assign(dsl: AssignmentDsl<T>.() -> Unit): UpdateAndWhereBuilder
     }
 
     interface UpdateAndWhereBuilder: UpdateBuild {
-        fun where(dsl: CriteriaDsl.() -> Condition): UpdateBuild
+        fun where(dsl: DefaultExpressionDsl.() -> Condition): UpdateBuild
     }
 
     interface UpdateBuild {

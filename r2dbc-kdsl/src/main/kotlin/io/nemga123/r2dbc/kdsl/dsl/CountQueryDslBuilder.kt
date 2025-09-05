@@ -8,7 +8,7 @@ interface CountQueryDslBuilder {
     fun from(dsl: FromDsl.() -> Unit): CountWhereBuilder
 
     interface CountWhereBuilder: SelectAndLockModeBuilder, CountBuild {
-        fun where(dsl: CriteriaDsl.() -> Condition): SelectAndLockModeBuilder
+        fun where(dsl: DefaultExpressionDsl.() -> Condition): SelectAndLockModeBuilder
     }
 
     interface SelectAndLockModeBuilder: CountBuild {

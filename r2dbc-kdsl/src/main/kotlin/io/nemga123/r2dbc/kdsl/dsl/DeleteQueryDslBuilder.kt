@@ -8,7 +8,7 @@ interface DeleteQueryDslBuilder {
     fun from(table: Table): DeleteFromAndWhereBuilder
 
     interface DeleteFromAndWhereBuilder: DeleteBuild {
-        fun where(dsl: CriteriaDsl.() -> Condition): DeleteFromAndWhereBuilder
+        fun where(dsl: DefaultExpressionDsl.() -> Condition): DeleteFromAndWhereBuilder
     }
 
     interface DeleteBuild {

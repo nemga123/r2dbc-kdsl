@@ -28,8 +28,8 @@ class CountQueryDsl (
     }
 
 
-    override fun where(dsl: CriteriaDsl.() -> Condition): CountQueryDslBuilder.SelectAndLockModeBuilder {
-        this.where = CriteriaDsl(mappingContext).run(dsl)
+    override fun where(dsl: DefaultExpressionDsl.() -> Condition): CountQueryDslBuilder.SelectAndLockModeBuilder {
+        this.where = DefaultExpressionDsl(mappingContext).run(dsl)
         return this
     }
 

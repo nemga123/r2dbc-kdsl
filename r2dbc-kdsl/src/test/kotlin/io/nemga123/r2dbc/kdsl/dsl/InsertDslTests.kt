@@ -42,8 +42,10 @@ class InsertDslTests {
         val insert: Insert = InsertQueryDsl(mappingContext)
             .run {
                 into(Person::class)
-                    .set<Long>(Person::id, 10)
-                    .set<String>(Person::name, "James")
+                    .assign {
+                        set<Long>(Person::id, 10)
+                        set<String>(Person::name, "James")
+                    }
                     .build()
             }
 

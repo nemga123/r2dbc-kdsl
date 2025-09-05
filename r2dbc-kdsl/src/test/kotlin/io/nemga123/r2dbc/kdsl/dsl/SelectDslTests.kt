@@ -148,7 +148,6 @@ class SelectDslTests {
                 from(sourceTable)
                     .join(joinTable, sourceTable.path(Person::id).isEqualTo(joinTable.path(Person::id)))
             }
-                .page(Pageable.ofSize(10).withPage(1))
             .build()
         }
 

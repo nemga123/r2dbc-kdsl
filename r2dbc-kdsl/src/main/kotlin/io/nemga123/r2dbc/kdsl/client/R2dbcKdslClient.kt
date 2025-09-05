@@ -198,7 +198,7 @@ class R2dbcKdslClient (
         return result
     }
 
-    override suspend fun <T : Any> insert(dsl: InsertQueryDslBuilder.() -> Insert): Long {
+    override suspend fun insert(dsl: InsertQueryDslBuilder.() -> Insert): Long {
         val insert = InsertQueryDsl(mappingContext).run(dsl)
 
         val result = databaseClient.sql(QueryOperation { sqlRenderer.render(insert) })

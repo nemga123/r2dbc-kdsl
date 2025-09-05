@@ -5,9 +5,13 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity
 import org.springframework.data.relational.core.sql.BooleanLiteral
 import org.springframework.data.relational.core.sql.Column
+import org.springframework.data.relational.core.sql.Condition
+import org.springframework.data.relational.core.sql.Conditions
 import org.springframework.data.relational.core.sql.Expression
 import org.springframework.data.relational.core.sql.Functions
+import org.springframework.data.relational.core.sql.In
 import org.springframework.data.relational.core.sql.InlineQuery
+import org.springframework.data.relational.core.sql.Literal
 import org.springframework.data.relational.core.sql.NumericLiteral
 import org.springframework.data.relational.core.sql.SQL
 import org.springframework.data.relational.core.sql.Select
@@ -15,6 +19,7 @@ import org.springframework.data.relational.core.sql.SimpleFunction
 import org.springframework.data.relational.core.sql.SqlIdentifier
 import org.springframework.data.relational.core.sql.StringLiteral
 import org.springframework.data.relational.core.sql.Table
+import org.springframework.expression.spel.ast.NullLiteral
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 
@@ -25,6 +30,9 @@ open class DefaultExpressionDsl(
         return this.column(getColumnName(column))
     }
 
+    fun coalesce(vararg expression: Expression): SimpleFunction {
+        return Functions.coalesce(*expression)
+    }
 
     fun count(vararg expression: Expression): SimpleFunction {
         return Functions.count(*expression)
@@ -67,7 +75,37 @@ open class DefaultExpressionDsl(
         return SQL.literalOf(boolean)
     }
 
-    open fun <T: Any> table(clazz: KClass<T>): Table {
+    fun <T: Any> nullLiteral(): Literal<T> {
+        return SQL.nullLiteral()
+    }
+
+    fun and(vararg conditions: Condition): Condition {
+        return conditions.reduce { acc, condition -> acc.and(condition) }.let { Conditions.nest(it) }
+    }
+
+    fun or(vararg conditions: Condition): Condition {
+        return conditions.reduce { acc, condition -> acc.or(condition) }.let { Conditions.nest(it) }
+    }
+
+    fun not(condition: Condition): Condition {
+        return condition.not()
+    }
+
+    fun Column.`in`(dsl: SelectQueryDslBuilder.() -> Select): In {
+        val select = SelectQueryDsl(mappingContext).run(dsl)
+        return this.`in`(select)
+    }
+
+    fun Column.notIn(dsl: SelectQueryDslBuilder.() -> Select): In {
+        val select = SelectQueryDsl(mappingContext).run(dsl)
+        return this.notIn(select)
+    }
+
+    fun function(functionName: String, vararg expression: Expression): SimpleFunction {
+        return SimpleFunction.create(functionName, listOf(*expression))
+    }
+
+    fun <T: Any> table(clazz: KClass<T>): Table {
         val tableName = getTableName(clazz)
         return Table.create(tableName)
     }
@@ -76,7 +114,6 @@ open class DefaultExpressionDsl(
         val select = SelectQueryDsl(mappingContext).run(dsl)
         return InlineQuery.create(select, alias)
     }
-
 
     fun <T : Any, V: Any?> getColumnName(property: KProperty1<T, V>): SqlIdentifier {
         val entity: RelationalPersistentEntity<*> = getRequiredEntity(PropertyUtils.getOwner(property))

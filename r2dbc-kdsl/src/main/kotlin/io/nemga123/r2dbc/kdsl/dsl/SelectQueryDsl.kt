@@ -49,8 +49,8 @@ class SelectQueryDsl (
     }
 
 
-    override fun where(dsl: CriteriaDsl.() -> Condition): SelectQueryDslBuilder.SelectWhereAndOrderByBuilder {
-        this.where = CriteriaDsl(mappingContext).run(dsl)
+    override fun where(dsl: DefaultExpressionDsl.() -> Condition): SelectQueryDslBuilder.SelectWhereAndOrderByBuilder {
+        this.where = DefaultExpressionDsl(mappingContext).run(dsl)
         return this
     }
 

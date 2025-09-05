@@ -15,7 +15,7 @@ interface SelectQueryDslBuilder {
     }
 
     interface SelectWhereBuilder: SelectAndLimitOffsetBuilder, SelectWhereAndOrderByBuilder, SelectAndLockModeBuilder, SelectBuild {
-        fun where(dsl: CriteriaDsl.() -> Condition): SelectWhereAndOrderByBuilder
+        fun where(dsl: DefaultExpressionDsl.() -> Condition): SelectWhereAndOrderByBuilder
     }
 
     interface SelectWhereAndOrderByBuilder: SelectAndLockModeBuilder, SelectBuild {

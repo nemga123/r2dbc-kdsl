@@ -19,8 +19,8 @@ class DeleteQueryDsl(
         return this
     }
 
-    override fun where(dsl: CriteriaDsl.() -> Condition): DeleteQueryDslBuilder.DeleteFromAndWhereBuilder {
-        this.where = CriteriaDsl(mappingContext).run(dsl)
+    override fun where(dsl: DefaultExpressionDsl.() -> Condition): DeleteQueryDslBuilder.DeleteFromAndWhereBuilder {
+        this.where = DefaultExpressionDsl(mappingContext).run(dsl)
         return this
     }
 

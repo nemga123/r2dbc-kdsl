@@ -19,13 +19,11 @@ class InsertEntityQueryDsl<T: Any>(
         val persistentEntity: RelationalPersistentEntity<T> = this.mappingContext.getRequiredPersistentEntity(entity::class.java) as RelationalPersistentEntity<T>
         val propertyAccessor: PersistentPropertyAccessor<T> = persistentEntity.getPropertyAccessor(entity)
 
-        val initializedEntity: T = this.setVersionIfNecessary(persistentEntity, propertyAccessor, entity)
-        val initializedEntityPropertyAccessor: PersistentPropertyAccessor<T> = persistentEntity.getPropertyAccessor(initializedEntity)
+        val initializedEntityPropertyAccessor: PersistentPropertyAccessor<T> = persistentEntity.getPropertyAccessor(entity)
 
         val table = table(entity::class)
         val insertBuilder: InsertBuilder.InsertIntoColumnsAndValuesWithBuild = Insert.builder()
             .into(table)
-
 
         for (column in persistentEntity) {
             if (column.isIdProperty && this.shouldSkipIdValue(propertyAccessor.getProperty(column))) {
@@ -37,20 +35,6 @@ class InsertEntityQueryDsl<T: Any>(
         }
 
         return insertBuilder.build()
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun <T: Any> setVersionIfNecessary(
-        persistentEntity: RelationalPersistentEntity<T>,
-        propertyAccessor: PersistentPropertyAccessor<*>,
-        entity: T
-    ): T {
-        val versionProperty = persistentEntity.versionProperty ?: return entity
-        val versionPropertyType = versionProperty.type
-        val version = if (versionPropertyType.isPrimitive) 1L else 0L
-        val conversionService = converter.conversionService
-        propertyAccessor.setProperty(versionProperty, conversionService.convert(version, versionPropertyType))
-        return propertyAccessor.bean as T
     }
 
     private fun shouldSkipIdValue(idValue: Any?): Boolean {
