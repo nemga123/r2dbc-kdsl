@@ -28,6 +28,8 @@ These modules:
 3. provides query results by kotlin coroutines, not a reactor.
 4. uses core spring-data-relational query, so you can build more complex query
 
+** For more detailed specification, please visit [gitbook documentation](https://nemga123.gitbook.io/r2dbc-kdsl/) **
+
 ## Getting Started
 
 ---
